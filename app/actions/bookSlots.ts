@@ -22,7 +22,8 @@ export async function bookSlot(formData: { fullName: string; slotId: number; slo
     });
 
     const rows = response.data.values || [];
-    const currentBookings = rows.filter(row => row[2] === formData.slotId.toString()).length;
+    const targetSlotId = String(formData.slotId);
+    const currentBookings = rows.filter((row) => String(row[2] ?? "").trim() === targetSlotId).length;
 
     // 2. Find the specific quota for this slot ID
     const selectedSlotConfig = SLOTS.find(s => s.id === formData.slotId);

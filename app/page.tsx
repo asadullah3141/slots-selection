@@ -4,20 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, User, AlertTriangle, CheckCircle, Loader2, Calendar } from 'lucide-react';
 import { bookSlot } from '@/app/actions/bookSlots';
 import { getSlotAvailability } from '@/app/actions/getSlots';
-
-// The Source of Truth for Slots and Quotas
-export const SLOTS = [
-  { id: 1, time: "Saturday 18th March 08:30 AM", quota: 3 },
-  { id: 2, time: "Saturday 18th March 10:00 AM", quota: 4 },
-  { id: 3, time: "Saturday 18th March 12:00 PM", quota: 4 },
-  { id: 4, time: "Saturday 18th March 02:00 PM", quota: 4 },
-  { id: 5, time: "Saturday 18th March 04:00 PM", quota: 5 },
-  { id: 6, time: "Sunday 19th March 08:30 AM", quota: 3 },
-  { id: 7, time: "Sunday 19th March 10:00 AM", quota: 4 },
-  { id: 8, time: "Sunday 19th March 12:00 PM", quota: 4 },
-  { id: 9, time: "Sunday 19th March 02:00 PM", quota: 4 },
-  { id: 10, time: "Sunday 19th March 04:00 PM", quota: 5 },
-];
+import { SLOTS } from '@/app/data/slots';
 
 export default function TestBookingPage() {
   const [fullName, setFullName] = useState('');
@@ -135,7 +122,7 @@ export default function TestBookingPage() {
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {SLOTS.map((slot) => {
-                  const taken = availability[slot.id] || 0;
+                  const taken = availability[String(slot.id)] || 0;
                   const remaining = slot.quota - taken;
                   const isFull = remaining <= 0;
                   const isSelected = selectedSlot === slot.id;

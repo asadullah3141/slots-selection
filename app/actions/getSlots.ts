@@ -22,13 +22,19 @@ export async function getSlotAvailability() {
     });
 
     const rows = response.data.values || [];
-    
-    // Skip header row if it exists, then count occurrences of each SlotID
+
+    // Count only valid numeric SlotIDs (this naturally skips header/empty rows).
     const counts: Record<string, number> = {};
-    
-    rows.slice(1).forEach((row) => {
-      const slotId = row[2]; // Column C
-      counts[slotId] = (counts[slotId] || 0) + 1;
+
+    rows.forEach((row) => {
+      const rawSlotId = row[2]; // Column C
+      const normalizedSlotId = String(rawSlotId ?? "").trim();
+
+      if (!/^\d+$/.test(normalizedSlotId)) {
+        return;
+      }
+
+      counts[normalizedSlotId] = (counts[normalizedSlotId] || 0) + 1;
     });
 
     return { success: true, counts };
