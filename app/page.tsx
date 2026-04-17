@@ -114,7 +114,7 @@ export default function TestBookingPage() {
             
             {/* Name Section */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <label className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-600" /> Student Full Name
               </label>
               <input
@@ -122,7 +122,7 @@ export default function TestBookingPage() {
                 disabled={isSubmitting}
                 type="text"
                 placeholder="e.g. Johnathan Doe"
-                className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all text-lg"
+                className="text-gray-700 w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all text-lg"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
