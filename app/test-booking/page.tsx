@@ -1,36 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Clock, User, AlertTriangle, CheckCircle, Loader2, Calendar } from 'lucide-react';
-import { bookSlot } from '@/app/actions/bookSlots';
-import { getSlotAvailability } from '@/app/actions/getSlots';
-
-// The Source of Truth for Slots and Quotas
-export const SLOTS = [
-  { id: 1, time: "Saturday 18th March 08:30 AM", quota: 3 },
-  { id: 2, time: "Saturday 18th March 10:00 AM", quota: 4 },
-  { id: 3, time: "Saturday 18th March 12:00 PM", quota: 4 },
-  { id: 4, time: "Saturday 18th March 02:00 PM", quota: 4 },
-  { id: 5, time: "Saturday 18th March 04:00 PM", quota: 5 },
-  { id: 6, time: "Sunday 19th March 08:30 AM", quota: 3 },
-  { id: 7, time: "Sunday 19th March 10:00 AM", quota: 4 },
-  { id: 8, time: "Sunday 19th March 12:00 PM", quota: 4 },
-  { id: 9, time: "Sunday 19th March 02:00 PM", quota: 4 },
-  { id: 10, time: "Sunday 19th March 04:00 PM", quota: 5 },
-];
+import React, { useEffect, useState } from "react";
+import { AlertTriangle, Calendar, CheckCircle, Clock, Loader2, User } from "lucide-react";
+import { bookSlot } from "@/app/actions/bookSlots";
+import { getSlotAvailability } from "@/app/actions/getSlots";
+import { SLOTS } from "@/app/data/slots";
 
 export default function TestBookingPage() {
-  const [fullName, setFullName] = useState('');
+  const [fullName, setFullName] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [availability, setAvailability] = useState<Record<string, number>>({});
-  
-  // Status States
+
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 1. Fetch current availability from Google Sheets on load
   useEffect(() => {
     async function loadInitialData() {
       const result = await getSlotAvailability();
@@ -39,32 +24,39 @@ export default function TestBookingPage() {
       }
       setIsPageLoading(false);
     }
+
     loadInitialData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !selectedSlot) return;
+
+    if (!fullName || !selectedSlot) {
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
 
-    const slotData = SLOTS.find(s => s.id === selectedSlot);
+    const slotData = SLOTS.find((s) => s.id === selectedSlot);
 
     const result = await bookSlot({
       fullName,
       slotId: selectedSlot,
-      slotTime: slotData?.time || ""
+      slotTime: slotData?.time || "",
     });
 
     if (result.success) {
       setIsSuccess(true);
-    } else {
-      setError(result.error);
-      setIsSubmitting(false);
-      // Refresh availability in case the error was a "Slot Full" update
-      const refresh = await getSlotAvailability();
-      if (refresh.success) setAvailability(refresh.counts);
+      return;
+    }
+
+    setError(result.error);
+    setIsSubmitting(false);
+
+    const refresh = await getSlotAvailability();
+    if (refresh.success) {
+      setAvailability(refresh.counts);
     }
   };
 
@@ -77,13 +69,10 @@ export default function TestBookingPage() {
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Slot Locked!</h2>
           <p className="text-gray-600 mt-4 leading-relaxed">
-            Excellent, <span className="font-semibold text-black">{fullName}</span>. 
-            Your registration is complete. 
+            Excellent, <span className="font-semibold text-black">{fullName}</span>. Your registration is complete.
           </p>
           <div className="mt-8 pt-6 border-t border-gray-100">
-            <p className="text-sm text-gray-500 italic">
-              Remember: Changes require admin approval.
-            </p>
+            <p className="text-sm text-gray-500 italic">Remember: Changes require admin approval.</p>
           </div>
         </div>
       </div>
@@ -93,8 +82,6 @@ export default function TestBookingPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="max-w-3xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-        
-        {/* Header */}
         <div className="bg-slate-900 p-8 md:p-12 text-white">
           <div className="flex items-center gap-3 mb-4">
             <Calendar className="text-blue-400 w-6 h-6" />
@@ -111,8 +98,6 @@ export default function TestBookingPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-10">
-            
-            {/* Name Section */}
             <div className="space-y-3">
               <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-600" /> Student Full Name
@@ -128,14 +113,13 @@ export default function TestBookingPage() {
               />
             </div>
 
-            {/* Slots Grid */}
             <div className="space-y-4">
               <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                 <Clock className="w-4 h-4 text-blue-600" /> Choose Your Time
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {SLOTS.map((slot) => {
-                  const taken = availability[slot.id] || 0;
+                  const taken = availability[String(slot.id)] || 0;
                   const remaining = slot.quota - taken;
                   const isFull = remaining <= 0;
                   const isSelected = selectedSlot === slot.id;
@@ -148,26 +132,26 @@ export default function TestBookingPage() {
                       onClick={() => setSelectedSlot(slot.id)}
                       className={`group p-5 rounded-2xl border-2 text-left transition-all relative overflow-hidden ${
                         isSelected
-                          ? 'border-blue-600 bg-blue-50 shadow-md ring-1 ring-blue-600'
-                          : isFull 
-                            ? 'border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed'
-                            : 'border-slate-100 bg-white hover:border-slate-300'
+                          ? "border-blue-600 bg-blue-50 shadow-md ring-1 ring-blue-600"
+                          : isFull
+                            ? "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                            : "border-slate-100 bg-white hover:border-slate-300"
                       }`}
                     >
                       <div className="flex flex-col h-full justify-between">
-                        <span className={`text-base font-bold leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-800'}`}>
+                        <span className={`text-base font-bold leading-tight ${isSelected ? "text-blue-700" : "text-slate-800"}`}>
                           {slot.time}
                         </span>
-                        
+
                         <div className="mt-4 flex items-center justify-between">
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
-                            isFull ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {isFull ? 'FULL' : `${remaining} spots left`}
+                          <span
+                            className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                              isFull ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {isFull ? "FULL" : `${remaining} spots left`}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-medium uppercase">
-                            Quota: {slot.quota}
-                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium uppercase">Quota: {slot.quota}</span>
                         </div>
                       </div>
                     </button>
@@ -176,7 +160,6 @@ export default function TestBookingPage() {
               </div>
             </div>
 
-            {/* Admin Warning */}
             <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-4">
               <div className="bg-amber-100 p-2 rounded-lg">
                 <AlertTriangle className="w-5 h-5 text-amber-700" />
@@ -184,19 +167,18 @@ export default function TestBookingPage() {
               <div>
                 <p className="text-sm text-amber-900 font-bold">Important Notice</p>
                 <p className="text-sm text-amber-800/80 mt-1">
-                  If you would need to change your slot, you need to contact admin, so choose slot carefully. No edits are allowed after submission.
+                  If you would need to change your slot, you need to contact admin, so choose slot carefully. No edits are
+                  allowed after submission.
                 </p>
               </div>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="animate-shake p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-semibold text-center">
                 {error}
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={!selectedSlot || !fullName || isSubmitting}
@@ -214,10 +196,8 @@ export default function TestBookingPage() {
           </form>
         )}
       </div>
-      
-      <p className="text-center text-slate-400 mt-8 text-sm font-medium">
-        Authenticated via Google Sheets Secure API
-      </p>
+
+      <p className="text-center text-slate-400 mt-8 text-sm font-medium">Authenticated via Google Sheets Secure API</p>
     </div>
   );
 }
