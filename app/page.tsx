@@ -85,9 +85,9 @@ export default function TestBookingPage() {
         <div className="bg-slate-900 p-8 md:p-12 text-white">
           <div className="flex items-center gap-3 mb-4">
             <Calendar className="text-blue-400 w-6 h-6" />
-            <span className="text-blue-400 font-bold tracking-widest uppercase text-sm">Mock Test 2</span>
+            <span className="text-blue-400 font-bold tracking-widest uppercase text-sm">Digital Marketing Final Exam</span>
           </div>
-          <h1 className="text-4xl font-black">Test Slot Selection</h1>
+          <h1 className="text-4xl font-black">Exam Slot Selection</h1>
           <p className="text-slate-400 mt-3 text-lg">Please enter your name and select an available time window.</p>
         </div>
 
